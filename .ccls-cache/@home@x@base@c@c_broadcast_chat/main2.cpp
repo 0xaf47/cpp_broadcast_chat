@@ -12,6 +12,12 @@
 
 using namespace std;
 
+
+/*
+ * Утилита прослушивает все доступные сетевые интерфейсы (INADDR_ANY), а вот отправку производит на широковещательный адрес подсети /24 для ip-адреса, переданного 
+ * в аргументах. Вариант широковещательной рассылки для подсети /0 у меня заставить работать не удалось ввиду настроек сетевого оборудования. 
+ */
+
 struct ThreadData {
     int sockfd;
     sockaddr_in broadcast_addr;
@@ -40,7 +46,7 @@ void* send_thread(void* arg) {
     char buffer[MAX_MSG_LEN];
     while (true) {
         cin.getline(buffer, MAX_MSG_LEN);
-        string message = data->nickname + ": " + buffer;
+        string message = data->nickname + ": " + buffer; // Формирование сообщения с никнеймом
         int len = message.length();
         if (len > MAX_MSG_LEN) {
             cerr << "Message too long" << endl;
@@ -73,7 +79,7 @@ int main(int argc, char* argv[]) {
     sockaddr_in my_addr;
     memset(&my_addr, 0, sizeof(my_addr));
     my_addr.sin_family = AF_INET;
-    my_addr.sin_addr.s_addr = INADDR_ANY;
+    my_addr.sin_addr.s_addr = INADDR_ANY; // Прослушиваются все сетевые интерфейсы
     my_addr.sin_port = htons(atoi(argv[2]));
     if (bind(sockfd, (sockaddr*)&my_addr, sizeof(my_addr)) == -1) {
         cerr << "Error binding socket" << endl;
@@ -83,17 +89,17 @@ int main(int argc, char* argv[]) {
     memset(&broadcast_addr, 0, sizeof(broadcast_addr));
     broadcast_addr.sin_family = AF_INET;
     in_addr_t subnet_addr = ntohl(inet_addr(argv[1])) & 0xFFFFFF00;
-    broadcast_addr.sin_addr.s_addr = htonl(subnet_addr | 0xFF);
+    broadcast_addr.sin_addr.s_addr = htonl(subnet_addr | 0xFF); // Формируем широковещательный адрес для подсети /24
     broadcast_addr.sin_port = htons(atoi(argv[2]));
     cout << "Enter your nickname: ";
     string nickname;
     cin >> nickname;
-    ThreadData data = {sockfd, broadcast_addr, nickname};
+    ThreadData data = {sockfd, broadcast_addr, nickname}; // cокет, широковещательный адрес, ник
     pthread_t receive_tid, send_tid;
     pthread_create(&receive_tid, NULL, receive_thread, &data);
     pthread_create(&send_tid, NULL, send_thread, &data);
     pthread_join(receive_tid, NULL);
-    pthread_join(send_tid, NULL);
+    pthread_join(send_tid, NULL); // Запускаем наши потоки
     close(sockfd);
     return 0;
 }
