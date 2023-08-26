@@ -74,16 +74,17 @@ int main(int argc, char* argv[]) {
     sockaddr_in my_addr;
     memset(&my_addr, 0, sizeof(my_addr));
     my_addr.sin_family = AF_INET;
-    my_addr.sin_addr.s_addr = INADDR_ANY;
+    my_addr.sin_addr.s_addr = inet_addr(argv[1]);
     my_addr.sin_port = htons(atoi(argv[2]));
     if (bind(sockfd, (sockaddr*)&my_addr, sizeof(my_addr)) == -1) {
         cerr << "Error binding socket" << endl;
         exit(1);
     }
+    in_addr_t subnet_addr = ntohl(my_addr.sin_addr.s_addr) & 0xFFFFFF00; // маска /24
     sockaddr_in broadcast_addr;
     memset(&broadcast_addr, 0, sizeof(broadcast_addr));
     broadcast_addr.sin_family = AF_INET;
-    broadcast_addr.sin_addr.s_addr = inet_addr("192.168.0.255");
+    broadcast_addr.sin_addr.s_addr = htonl(subnet_addr | 0xFF);
     broadcast_addr.sin_port = htons(atoi(argv[2]));
     cout << "Enter your nickname: ";
     string nickname;
@@ -97,4 +98,3 @@ int main(int argc, char* argv[]) {
     close(sockfd);
     return 0;
 }
-
