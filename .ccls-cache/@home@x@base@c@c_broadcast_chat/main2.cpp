@@ -54,7 +54,6 @@ void* send_thread(void* arg) {
         }
     }
 }
-
 int main(int argc, char* argv[]) {
     if (argc != 3) {
         cerr << "Usage: " << argv[0] << " <ip_address> <port>" << endl;
@@ -74,19 +73,18 @@ int main(int argc, char* argv[]) {
     sockaddr_in my_addr;
     memset(&my_addr, 0, sizeof(my_addr));
     my_addr.sin_family = AF_INET;
-    my_addr.sin_addr.s_addr = inet_addr(argv[1]);
+    my_addr.sin_addr.s_addr = INADDR_ANY;
     my_addr.sin_port = htons(atoi(argv[2]));
     if (bind(sockfd, (sockaddr*)&my_addr, sizeof(my_addr)) == -1) {
         cerr << "Error binding socket" << endl;
         exit(1);
     }
-    in_addr_t subnet_addr = ntohl(my_addr.sin_addr.s_addr) & 0xFFFFFF00; // маска /24
     sockaddr_in broadcast_addr;
     memset(&broadcast_addr, 0, sizeof(broadcast_addr));
     broadcast_addr.sin_family = AF_INET;
+    in_addr_t subnet_addr = ntohl(inet_addr(argv[1])) & 0xFFFFFF00;
     broadcast_addr.sin_addr.s_addr = htonl(subnet_addr | 0xFF);
     broadcast_addr.sin_port = htons(atoi(argv[2]));
-    cout << inet_addr(argv[1]) << " " << subnet_addr << " " << broadcast_addr.sin_addr.s_addr <<  inet_addr("192.168.0.255") << endl;
     cout << "Enter your nickname: ";
     string nickname;
     cin >> nickname;
@@ -94,12 +92,8 @@ int main(int argc, char* argv[]) {
     pthread_t receive_tid, send_tid;
     pthread_create(&receive_tid, NULL, receive_thread, &data);
     pthread_create(&send_tid, NULL, send_thread, &data);
-    cout << "000" << endl;
-    pthread_join(send_tid, NULL);
-
-    cout << "111" << endl;
-    
     pthread_join(receive_tid, NULL);
+    pthread_join(send_tid, NULL);
     close(sockfd);
     return 0;
 }

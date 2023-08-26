@@ -86,6 +86,7 @@ int main(int argc, char* argv[]) {
     broadcast_addr.sin_family = AF_INET;
     broadcast_addr.sin_addr.s_addr = htonl(subnet_addr | 0xFF);
     broadcast_addr.sin_port = htons(atoi(argv[2]));
+    cout << inet_addr(argv[1]) << " " << subnet_addr << " " << broadcast_addr.sin_addr.s_addr <<  inet_addr("192.168.0.255") << endl;
     cout << "Enter your nickname: ";
     string nickname;
     cin >> nickname;
@@ -93,8 +94,12 @@ int main(int argc, char* argv[]) {
     pthread_t receive_tid, send_tid;
     pthread_create(&receive_tid, NULL, receive_thread, &data);
     pthread_create(&send_tid, NULL, send_thread, &data);
-    pthread_join(receive_tid, NULL);
+    cout << "000" << endl;
     pthread_join(send_tid, NULL);
+
+    cout << "111" << endl;
+    
+    pthread_join(receive_tid, NULL);
     close(sockfd);
     return 0;
 }
