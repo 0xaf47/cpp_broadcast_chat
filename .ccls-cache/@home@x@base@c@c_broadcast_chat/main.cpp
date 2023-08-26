@@ -31,7 +31,7 @@ void* receive_thread(void* arg) {
             continue;
         }
         buffer[len] = '\0';
-        cout << inet_ntoa(sender_addr.sin_addr) << " (" << buffer << "): " << endl;
+        cout << inet_ntoa(sender_addr.sin_addr) << << buffer  << endl;
     }
 }
 
